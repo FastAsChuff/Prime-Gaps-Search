@@ -357,13 +357,14 @@ int main(int argc, char* argv[]) {
   uint8_t *bitarray = makebitarray((numsperdivision/3)+MAX64BITPRIMEGAPSIZE, &bitarraynumbytes);
   assert(bitarray);
   uint64_t divisionstart = rangestart;  
-  uint64_t divisionstartprev;  
-  uint64_t divisionendprev;  
+  uint64_t divisionstartprev = 0;  
+  uint64_t divisionendprev = 0;  
   uint64_t gapcount = 0;
   uint64_t primecount = 0;
   while (divisionstart <= rangeend) {
     // BitArray is [divisionstart,divisionend] + [1+divisionend, divisionend+MAX64BITPRIMEGAPSIZE]
-    uint64_t divisionend = MIN(rangeend, divisionstart + numsperdivision - 1);  
+    uint64_t divisionendtemp = divisionstart + numsperdivision - 1;  
+    uint64_t divisionend = (divisionendtemp < divisionstart ? rangeend : MIN(rangeend, divisionstart + numsperdivision - 1));  
     printf("Checking interval [%lu, %lu]...\n", divisionstart, divisionend);
     fflush(stdout);
     pthread_t updatebitarrayt;
