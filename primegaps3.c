@@ -4,7 +4,7 @@
 // Author: Simon Goater Nov 2025
 // Motivated by deleted question https://math.stackexchange.com/questions/5108199/promegaps-kilogaps#comment11002118_5108199
 // Question was looking for a list of all prime gaps >= 1000 in the range [5*10^16, 10^17]
-// thus extending the results here https://primegap-list-project.github.io/lists/prime-gaps-first-occurrences/
+// thus extending the results documented in Dr. Thomas R. Nicely's https://oeis.org/A000101/a000101.pdf.
 // This program uses a segmented sieve of Eratosthenes. 
 // Approx. 2.5 i7-6700 @3.4GHz (all core) CPU years required to cover that interval.
 // I recommended a GPU accelerated search instead. Tomás Oliveira e Silva's fast_seive.c performance is similar on my CPU, 
