@@ -260,7 +260,7 @@ void printresults(uint8_t *bitarray, uint64_t bitarraynumbytes, uint64_t divisio
     }
   }
   neargapsexist |= (conseq0xff >= minconseq0xff);
-  if (neargapsexist) {
+  if (neargapsexist || (gapsize < 48)) {
     uint64_t prevprime = -1;
     uint32_t deltai = 4;
     for (i=1; i <= (divisionend-divisionstart)+MAX64BITPRIMEGAPSIZE;) {
@@ -287,8 +287,9 @@ void printresults(uint8_t *bitarray, uint64_t bitarraynumbytes, uint64_t divisio
   }
   return;
 }
+
 /*
-void printresultsold(uint8_t *bitarray, uint64_t bitarraynumbytes, uint64_t divisionstart, uint64_t divisionend, uint64_t *gapcount, uint32_t gapsize, uint64_t *primecount, _Bool printprimes) {
+void printresults(uint8_t *bitarray, uint64_t bitarraynumbytes, uint64_t divisionstart, uint64_t divisionend, uint64_t *gapcount, uint32_t gapsize, uint64_t *primecount, _Bool printprimes) {
   //return;
   uint64_t prevprime = -1;
   uint32_t deltai = 4;
@@ -302,6 +303,45 @@ void printresultsold(uint8_t *bitarray, uint64_t bitarraynumbytes, uint64_t divi
               printf("%lu %lu Diff = %lu\n", prevprime, i+divisionstart, i+divisionstart-prevprime);
               fflush(stdout);
             }
+            (*gapcount)++;
+          }
+        }
+      }
+      prevprime = i+divisionstart;
+    }
+    i += deltai;
+    deltai = 6 - deltai;
+  }
+}
+*/
+/*
+uint64_t twinprimecountA = 0;
+uint64_t twinprimecountB = 0;
+uint64_t twinprimecountC = 0;
+void printresults(uint8_t *bitarray, uint64_t bitarraynumbytes, uint64_t divisionstart, uint64_t divisionend, uint64_t *gapcount, uint32_t gapsize, uint64_t *primecount, _Bool printprimes) {
+  // https://math.stackexchange.com/questions/5112047/are-twin-primes-of-form-10n9-and-10n11-rarer-than-the-other-forms
+  uint64_t prevprime = -1;
+  uint32_t deltai = 4;
+  for (uint64_t i=1; i <= (divisionend-divisionstart)+MAX64BITPRIMEGAPSIZE;) {
+    if (!getbitarray(bitarraymod6(i),bitarray)) {
+      if (i <= (divisionend-divisionstart)) (*primecount)++;
+      if (prevprime != (uint64_t)-1) {
+        if (i+divisionstart - prevprime == 2) {
+          if (prevprime <= divisionend) {
+            uint8_t lastdigit = prevprime % 10;
+            if (lastdigit == 1) {
+              if ((printprimes) || (24 + prevprime > divisionend)) printf("A (%lu, %lu)\n", prevprime, i+divisionstart);
+              twinprimecountA++;
+            }
+            if (lastdigit == 7) {
+              if ((printprimes) || (24 + prevprime > divisionend)) printf("B (%lu, %lu)\n", prevprime, i+divisionstart);
+              twinprimecountB++;
+            }
+            if (lastdigit == 9) {
+              if ((printprimes) || (24 + prevprime > divisionend)) printf("C (%lu, %lu)\n", prevprime, i+divisionstart);
+              twinprimecountC++;
+            }
+            if (printprimes) fflush(stdout);
             (*gapcount)++;
           }
         }
@@ -339,6 +379,7 @@ int main(int argc, char* argv[]) {
   assert((rangestart % 24) == 0);
   assert((rangeend % 24) == 23);
   assert(gapsize >= 2);
+  assert(gapsize <= MAX64BITPRIMEGAPSIZE);
   assert(rangestart < rangeend);
   assert(rangeend < -(uint64_t)MAX64BITPRIMEGAPSIZE);
   uint64_t memmaxbits = 12000000000ULL;
@@ -364,7 +405,7 @@ int main(int argc, char* argv[]) {
   while (divisionstart <= rangeend) {
     // BitArray is [divisionstart,divisionend] + [1+divisionend, divisionend+MAX64BITPRIMEGAPSIZE]
     uint64_t divisionendtemp = divisionstart + numsperdivision - 1;  
-    uint64_t divisionend = (divisionendtemp < divisionstart ? rangeend : MIN(rangeend, divisionstart + numsperdivision - 1));  
+    uint64_t divisionend = (divisionendtemp < divisionstart ? rangeend : MIN(rangeend, divisionendtemp));  
     printf("Checking interval [%lu, %lu]...\n", divisionstart, divisionend);
     fflush(stdout);
     pthread_t updatebitarrayt;
@@ -393,6 +434,7 @@ int main(int argc, char* argv[]) {
   uint64_t endtime = time(0);
   printresults(bitarray, bitarraynumbytes, divisionstart, rangeend, &gapcount, gapsize, &primecount, printprimes);
   printf("Found %lu gaps >= %u, and %lu primes in the interval [%lu, %lu].\n", gapcount, gapsize, primecount, rangestart, rangeend);
+  //printf("#A = %lu, #B = %lu, #C = %lu\n", twinprimecountA, twinprimecountB, twinprimecountC);
   if (endtime - starttime > 5) printf("(%f billion ints/s in segmented sieve)\n", (rangeend - rangestart)/(1000000000.0*(endtime - starttime)));
   free(bitarray);
   free(bitarrayupdating);
